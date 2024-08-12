@@ -11,6 +11,9 @@ properties([
 ])
 pipeline {
     agent any
+    tools{
+        terraform 'tf'
+    }
     stages {
         stage('Preparing') {
             steps {
