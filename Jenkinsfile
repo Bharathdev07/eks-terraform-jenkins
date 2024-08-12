@@ -1,58 +1,39 @@
-properties([
-    parameters([
-        string(
-            defaultValue: 'dev',
-            name: 'Environment'
-        ),
-        choice(
-            choices: ['init','plan', 'apply', 'destroy'], 
-            name: 'Terraform_Action'
-        )])
-])
 pipeline {
     agent any
-    tools{
-        terraform 'tf'
-    }
+tools{
+terraform 'tf'
+}
     stages {
-        stage('Preparing') {
+        stage('Checkout') {
             steps {
-                sh 'echo Preparing'
+                
+                git branch: 'master', url: 'https://github.com/Bharathdev07/eks-terraform-jenkins.git'
             }
         }
-        stage('Git Pulling') {
+        stage('Build') {
             steps {
-                git branch: 'master', url: 'https://github.com/AmanPathak-DevOps/EKS-Terraform-GitHub-Actions.git'
-            }
-        }
-        stage('Init') {
-            steps {
-                withAWS(credentials: 'aws-creds', region: 'ap-south-1') {
-                sh 'terraform -chdir=eks/ init'
+                // Change directory to 'build'
+                dir('eks') {
+                    // Run a build command within the 'build' directory
+                    sh 'terraform init'
                 }
             }
         }
-        stage('Validate') {
+        stage('Test') {
             steps {
-                withAWS(credentials: 'aws-creds', region: 'ap-south-1') {
-                sh 'terraform -chdir=eks/ validate'
+                // Change directory to 'test'
+                dir('eks') {
+                    // Run tests within the 'test' directory
+                    sh 'terraform plan --var-file="dev.tfvars'
                 }
             }
         }
-        stage('Action') {
+        stage('Deploy') {
             steps {
-                withAWS(credentials: 'aws-creds', region: 'ap-south-1') {
-                    script {    
-                        if (params.Terraform_Action == 'plan') {
-                            sh "terraform -chdir=eks/ plan -var-file=${params.Environment}.tfvars"
-                        }   else if (params.Terraform_Action == 'apply') {
-                            sh "terraform -chdir=eks/ apply -var-file=${params.Environment}.tfvars -auto-approve"
-                        }   else if (params.Terraform_Action == 'destroy') {
-                            sh "terraform -chdir=eks/ destroy -var-file=${params.Environment}.tfvars -auto-approve"
-                        } else {
-                            error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
-                        }
-                    }
+                // Change directory to 'deploy'
+                dir('eks') {
+                    // Deploy the application from the 'deploy' directory
+                    sh 'terraform apply --auto-approve --var-file="dev.tfvars'
                 }
             }
         }
