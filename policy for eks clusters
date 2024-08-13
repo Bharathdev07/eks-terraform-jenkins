@@ -1,0 +1,10 @@
+we need to create to roles one for eks clusteer and other one for node group
+
+node-group-policy :--
+AmazonEBSCSIDriverPolicy
+AmazonEC2ContainerRegistryReadOnly
+AmazonEKS_CNI_Policy
+AmazonEKSWorkerNodePolicy
+
+cluster-role-policy:-
+AmazonEKSClusterPolicy
