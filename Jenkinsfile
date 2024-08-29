@@ -24,7 +24,7 @@ terraform 'terraform'
                 // Change directory to 'test'
                 dir('eks') {
                     // Run tests within the 'test' directory
-                    sh 'terraform plan --var-file="dev.tfvars'
+                    sh 'terraform plan --var-file="dev.tfvars"'
                 }
             }
         }
@@ -33,7 +33,7 @@ terraform 'terraform'
                 // Change directory to 'deploy'
                 dir('eks') {
                     // Deploy the application from the 'deploy' directory
-                    sh 'terraform apply --auto-approve --var-file="dev.tfvars'
+                    sh 'terraform apply --auto-approve --var-file="dev.tfvars"'
                 }
             }
         }
