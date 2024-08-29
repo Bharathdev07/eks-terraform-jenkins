@@ -1,7 +1,7 @@
 pipeline {
     agent any
 tools{
-terraform 'tf'
+terraform 'terraform'
 }
     stages {
         stage('Checkout') {
