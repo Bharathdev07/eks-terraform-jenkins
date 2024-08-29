@@ -45,6 +45,40 @@ resource "aws_iam_role" "eks-nodegroup-role" {
   })
 }
 
+resource "aws_iam_role_policy_attachment" "eks-AmazonEFSCSIDriverPolicy" {
+  count      = var.is_eks_nodegroup_role_enabled ? 1 : 0
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy"
+  role       = aws_iam_role.eks-nodegroup-role[count.index].name
+}
+resource "aws_iam_policy" "efs_csi_driver_policy" {
+  name        = "EFSCSIDriverPolicy"
+  description = "Policy for EFS CSI Driver"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = [
+          "elasticfilesystem:DescribeFileSystems",
+          "elasticfilesystem:DescribeMountTargets",
+          "elasticfilesystem:DescribeMountTargetSecurityGroups",
+          "elasticfilesystem:DescribeTags",
+          "elasticfilesystem:CreateMountTarget",
+          "elasticfilesystem:TagResource"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach the policy to the EKS nodegroup role
+resource "aws_iam_role_policy_attachment" "eks_EFS_CSI_Driver_Policy" {
+  count      = var.is_eks_nodegroup_role_enabled ? 1 : 0
+  policy_arn = aws_iam_policy.efs_csi_driver_policy.arn
+  role       = aws_iam_role.eks-nodegroup-role[count.index].name
+}
 resource "aws_iam_role_policy_attachment" "eks-AmazonWorkerNodePolicy" {
   count      = var.is_eks_nodegroup_role_enabled ? 1 : 0
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
@@ -65,11 +99,6 @@ resource "aws_iam_role_policy_attachment" "eks-AmazonEC2ContainerRegistryReadOnl
 resource "aws_iam_role_policy_attachment" "eks-AmazonEBSCSIDriverPolicy" {
   count      = var.is_eks_nodegroup_role_enabled ? 1 : 0
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-  role       = aws_iam_role.eks-nodegroup-role[count.index].name
-}
-resource "aws_iam_role_policy_attachment" "eks-AmazonEFSCSIDriverPolicy" {
-  count      = var.is_eks_nodegroup_role_enabled ? 1 : 0
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy"
   role       = aws_iam_role.eks-nodegroup-role[count.index].name
 }
 # OIDC
