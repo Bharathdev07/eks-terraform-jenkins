@@ -41,4 +41,30 @@ module "eks" {
   endpoint-public-access        = var.endpoint-public-access
 
   addons = var.addons
+
 }
+# Helm provider configuration
+provider "helm" {
+  kubernetes {
+    config_path = "~/.kube/config" # Adjust the path to your kubeconfig
+  }
+}
+
+# Helm chart for EFS CSI Driver
+resource "helm_release" "efs_csi_driver" {
+  name       = "efs-csi-driver"
+  repository = "https://kubernetes-sigs.github.io/aws-efs-csi-driver/"
+  chart      = "aws-efs-csi-driver"
+  version    = "1.3.0" # Check for the latest version
+
+  set {
+    name  = "controller.replicaCount"
+    value = "1"
+  }
+  
+  set {
+    name  = "node.replicaCount"
+    value = "1"
+  }
+}
+
